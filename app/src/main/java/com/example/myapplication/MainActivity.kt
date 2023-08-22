@@ -8,11 +8,13 @@ import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
+import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.google.firebase.messaging.FirebaseMessaging
 
 class MainActivity : AppCompatActivity() {
     private val TAG = "MainActivity"
@@ -30,7 +32,6 @@ class MainActivity : AppCompatActivity() {
         tvquote = findViewById<TextView>(R.id.tv_quote)
         btnadd = findViewById<Button>(R.id.buttonddQuote)
         name = "main"
-
         database = FirebaseDatabase.getInstance()
         databaseReference = database.getReference("quoteData")
         databaseReference2 = database.reference
@@ -43,6 +44,22 @@ class MainActivity : AppCompatActivity() {
             btnadd.visibility = View.GONE
         }
 
+        FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
+            if (!task.isSuccessful) {
+                Log.w(TAG, "Fetching FCM registration token failed", task.exception)
+                return@OnCompleteListener
+            }
+
+            // Get new FCM registration token
+            val token = task.result
+
+            // Log and toast
+            val msg = (token)
+            Log.d(TAG, msg)
+            Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
+            tvquote.text = token
+        })
+
         getData()
     }
 
@@ -51,7 +68,7 @@ class MainActivity : AppCompatActivity() {
             .addValueEventListener(object :ValueEventListener{
             override fun onDataChange(it: DataSnapshot) {
                 val data = it.value
-                tvquote.text = "$data"
+               // tvquote.text = "$data"
             }
 
             override fun onCancelled(error: DatabaseError) {
